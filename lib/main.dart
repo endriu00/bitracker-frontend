@@ -4,6 +4,8 @@
 
 // ignore_for_file: prefer_const_constructors_in_immutables
 
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -40,11 +42,23 @@ class BitrackerPrice extends StatefulWidget {
 
 class _BitrackerPriceState extends State<BitrackerPrice> {
   double price = 0;
-  double newPrice = 0;
-  String cryptoName = '';
-  TextEditingController textController = TextEditingController();
+  double solanaPrice = 0;
 
-  Future<double> getPrice() async {
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('solana').then((value) => setState(() => solanaPrice = value,)));
+  }
+  
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  Future<double> getPrice(cryptoName) async {
 
     Uri url = Uri.parse('https://9gfx4yhlgg.execute-api.us-east-2.amazonaws.com/prod/v1/crypto/' + cryptoName + '?currency=EUR');
     
@@ -54,7 +68,7 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
         "cmc_api_key": "",
       },
     );
-
+    print(response.body);
     return jsonDecode(response.body);    
 
   }
@@ -63,39 +77,17 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Column(
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: TextFormField(
-                controller: textController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Enter the cryptocurrency name',
-                ),
-              ),
+            Text(
+              'Solana',
             ),
-          ], 
+            Text(
+              '$solanaPrice',
+            ),
+          ],
         ),
-        SizedBox(
-          height: 20,
-        ),
-        Text('$price'),
-        SizedBox(
-          height: 20,
-        ),
-        ElevatedButton(
-          onPressed: () {
-            cryptoName = textController.text;
-            getPrice().then(
-              (value) => setState(
-                () => price = value
-              ),
-            );
-          }, 
-          child: const Text('Get Price'),
-        )
       ],           
     );
   }
