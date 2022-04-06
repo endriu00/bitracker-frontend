@@ -41,15 +41,19 @@ class BitrackerPrice extends StatefulWidget {
 }
 
 class _BitrackerPriceState extends State<BitrackerPrice> {
-  double price = 0;
   double solanaPrice = 0;
-
+  double ethereumPrice = 0;
+  
   Timer? timer;
 
   @override
   void initState() {
     super.initState();
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('solana').then((value) => setState(() => solanaPrice = value,)));
+    //timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('bitcoin').then((value) => setState(() => solanaPrice = value,)));
+    timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('ethereum').then((value) => setState(() => ethereumPrice = value,)));
+    //timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('alpaca-finance').then((value) => setState(() => solanaPrice = value,)));
+
   }
   
   @override
@@ -68,27 +72,77 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
         "cmc_api_key": "",
       },
     );
-    print(response.body);
     return jsonDecode(response.body);    
-
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Solana',
-            ),
-            Text(
-              '$solanaPrice',
-            ),
-          ],
-        ),
-      ],           
+    return Container(
+      color: Colors.black87,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 30,
+        vertical: 20,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: <Widget>[
+              const Text(
+                'Solana',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 214, 170, 37),
+                  fontSize: 30,
+                ),
+              ),
+              const SizedBox(
+                width: 90, 
+                height: 20,
+              ),
+              Text(
+                '$solanaPrice',
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 214, 170, 37),
+                  fontSize: 30,                
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              const Text(
+                'Ethereum',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 214, 170, 37),
+                  fontSize: 30,
+                ),
+              ),
+              const SizedBox(
+                width: 90, 
+                height: 20,
+              ),
+              Text(
+                '$ethereumPrice',
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 214, 170, 37),
+                  fontSize: 30,                
+                ),
+              ),
+            ],
+          ),
+        ],           
+      ),
+    );
+  }
+}
+
+
+class CryptoRow extends StatelessWidget {
+  const CryptoRow({ Key? key }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      
     );
   }
 }
