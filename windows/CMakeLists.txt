@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
-project(frontend LANGUAGES CXX)
+project(flutter_project LANGUAGES CXX)
 
-set(BINARY_NAME "frontend")
+set(BINARY_NAME "flutter_project")
 
 cmake_policy(SET CMP0063 NEW)
 
