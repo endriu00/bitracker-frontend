@@ -18,12 +18,9 @@ class MyApp extends StatelessWidget{
 
   static var routes = <String, WidgetBuilder>{
   '/homePage': (BuildContext context) => new HomePage(),
-  
   };
-
   @override
   Widget build(BuildContext context) {
-    
     return GetMaterialApp(
       title: 'Bitcracker Price',
       theme: new ThemeData(
@@ -33,7 +30,6 @@ class MyApp extends StatelessWidget{
       ),
       home: HomePage(),
     );
-
 
   }
 
