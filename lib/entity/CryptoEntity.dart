@@ -17,10 +17,10 @@ class CryptoEntity{
 
 
 
-  factory CryptoEntity.fromJson(Map<String, dynamic> json) => CryptoEntity(
-    price: json["price"],
+  factory CryptoEntity.fromJson(dynamic json) => CryptoEntity(
+    price: double.parse(json["price"]),
     name: json["name"],
-    dateResult: json["dateResult"],
+    dateResult: DateTime.parse(json["timestamp"]),
   );
 
     
