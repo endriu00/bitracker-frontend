@@ -65,7 +65,9 @@ class HistoryPageState extends State<HistoryPage> {
 
   Future<void> getHistoryOnPressed() async {
     List<CryptoEntity> result = [];
+
     result = await getHistory(crypto, startTime, endTime, true, maxResultController.text);
+
     result.forEach((element) => cryptoDataResult.add(new FlSpot(element.dateResult.day.toDouble(), element.price)));
     
   }

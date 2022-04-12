@@ -78,7 +78,7 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
     var response = await http.get(
       url,
       headers: {
-        "cmc_api_key": "a92bb94c-b937-47ca-95b7-a46e95564385",
+        "cmc_api_key": "",
       },
     );
 
@@ -91,10 +91,12 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
 
  
   void addCryptoElement() {
-    if (cryptoSearchController.text != "500 error") {
-      setState(() async {
+    if (cryptoSearchController.text != "500 error" && prices[cryptoSearchController.text] == null) {
+      
+      getPrice(cryptoSearchController.text).then((value) {
+        setState(() {
         // Set the first value as the current value of the crypto.
-        prices[cryptoSearchController.text] = await getPrice(cryptoSearchController.text);
+        prices[cryptoSearchController.text] = value;
         // Start a timer that gets the crypto price every X seconds.
         timer = Timer.periodic(
           Duration(seconds: callTime),
@@ -102,6 +104,7 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
                 () => prices[cryptoSearchController.text] = truncateToDecimalDigit(value, digit),
               )));
         dynamicCryptoList.add(cryptoElement());
+        });
       });
     }
   }
@@ -145,7 +148,7 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
                             crypto: '${cryptoSearchController.text}',
                           ));
                         },
-                        child: Text("Hystory"),
+                        child: Text("History"),
                         style: ButtonStyle(
                           overlayColor: MaterialStateProperty.all(Colors.red),
                           shape: MaterialStateProperty.all(
@@ -170,86 +173,6 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              const Text(
-                'Solana',
-                style: TextStyle(
-                  color: buttonColor,
-                  fontSize: 26,
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-                height: 20,
-              ),
-              Text(
-                '$solanaPrice',
-                style: const TextStyle(
-                  color: Color.fromARGB(255, 214, 170, 37),
-                  fontSize: 26,
-                ),
-              ),
-              Spacer(),
-               ElevatedButton(
-                    onPressed: () {
-                      Get.to(HistoryPage(
-                        crypto: 'Solana',
-                      ));
-                    },
-                    child: Text("Hystory"),
-                    style: ButtonStyle(
-                      overlayColor: MaterialStateProperty.all(Colors.red),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                  ),
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              const Text(
-                'Ethereum',
-                style: TextStyle(
-                  color: buttonColor,
-                  fontSize: 26,
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-                height: 20,
-              ),
-              Text(
-                '$ethereumPrice',
-                style: const TextStyle(
-                  color: Color.fromARGB(255, 214, 170, 37),
-                  fontSize: 26,
-                ),
-              ),
-              Spacer(),
-                  Container(
-                      child: ElevatedButton(
-                onPressed: () {
-                  Get.to(HistoryPage(
-                    crypto: "Ethereum",
-                  ));
-                },
-                child: Text("Hystory"),
-                style: ButtonStyle(
-                  overlayColor: MaterialStateProperty.all(Colors.green),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                ),
-              ))
-            ],
-          ),
           Container(
               child: Column(children: [
             if (!dynamicCryptoList.isEmpty)
