@@ -4,6 +4,7 @@
 
 // ignore_for_file: prefer_const_constructors_in_immutables
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter_project/globalVariables.dart';
 import 'package:flutter_project/ui/HistroyPage.dart';
 import 'package:http/http.dart' as http;
@@ -38,25 +39,27 @@ class BitrackerPrice extends StatefulWidget {
 class _BitrackerPriceState extends State<BitrackerPrice> {
   double solanaPrice = 0;
   double ethereumPrice = 0;
-  TextEditingController cryptoSearchController = new TextEditingController();
+  Map<String,double> prices = Map<String,double>();
+  TextEditingController cryptoSearchController = TextEditingController();
   List<Widget> dynamicCryptoList = [];
   Timer? timer;
+  int digit = 8;
+  int callTime = 1200;
+  String apiPathCryptoValue = 'https://9gfx4yhlgg.execute-api.us-east-2.amazonaws.com/prod/v1/crypto/';
 
   @override
   void initState() {
     super.initState();
     timer = Timer.periodic(
-        Duration(seconds: 15),
+        Duration(seconds: callTime),
         (Timer t) => getPrice('solana').then((value) => setState(
-              () => solanaPrice = value,
+              () => solanaPrice = truncateToDecimalDigit(value, digit),
             )));
-    //timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('bitcoin').then((value) => setState(() => solanaPrice = value,)));
     timer = Timer.periodic(
-        Duration(seconds: 15),
+        Duration(seconds: callTime),
         (Timer t) => getPrice('ethereum').then((value) => setState(
-              () => ethereumPrice = value,
+              () => ethereumPrice = truncateToDecimalDigit(value, digit),
             )));
-    //timer = Timer.periodic(Duration(seconds: 15), (Timer t) => getPrice('alpaca-finance').then((value) => setState(() => solanaPrice = value,)));
   }
 
   @override
@@ -66,24 +69,38 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
   }
 
   Future<double> getPrice(cryptoName) async {
+    
     Uri url = Uri.parse(
-        'https://9gfx4yhlgg.execute-api.us-east-2.amazonaws.com/prod/v1/crypto/' +
+            apiPathCryptoValue+
             cryptoName +
             '?currency=EUR');
 
     var response = await http.get(
       url,
       headers: {
-        "cmc_api_key": "",
+        "cmc_api_key": "a92bb94c-b937-47ca-95b7-a46e95564385",
       },
     );
 
     return jsonDecode(response.body);
   }
 
+  double truncateToDecimalDigit(double value, int digit){
+    return ((value* pow(10, digit)).truncate() / pow(10, digit));
+  }
+
+ 
   void addCryptoElement() {
     if (cryptoSearchController.text != "500 error") {
-      setState(() {
+      setState(() async {
+        // Set the first value as the current value of the crypto.
+        prices[cryptoSearchController.text] = await getPrice(cryptoSearchController.text);
+        // Start a timer that gets the crypto price every X seconds.
+        timer = Timer.periodic(
+          Duration(seconds: callTime),
+          (Timer t) => getPrice(cryptoSearchController.text).then((value) => setState(
+                () => prices[cryptoSearchController.text] = truncateToDecimalDigit(value, digit),
+              )));
         dynamicCryptoList.add(cryptoElement());
       });
     }
@@ -112,7 +129,7 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
                         height: 20,
                       ),
                       Text(
-                        '234',
+                        '${prices[cryptoSearchController.text]}',
                         style: const TextStyle(
                           color: Color.fromARGB(255, 214, 170, 37),
                           fontSize: 26,
@@ -207,15 +224,14 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
                 height: 20,
               ),
               Text(
-                '$solanaPrice',
+                '$ethereumPrice',
                 style: const TextStyle(
                   color: Color.fromARGB(255, 214, 170, 37),
                   fontSize: 26,
                 ),
               ),
               Spacer(),
-              Expanded(
-                  child: Container(
+                  Container(
                       child: ElevatedButton(
                 onPressed: () {
                   Get.to(HistoryPage(
@@ -231,15 +247,15 @@ class _BitrackerPriceState extends State<BitrackerPrice> {
                     ),
                   ),
                 ),
-              )))
+              ))
             ],
           ),
           Container(
               child: Column(children: [
             if (!dynamicCryptoList.isEmpty)
-              for (int i = 0; i < dynamicCryptoList.length; i++) 
+              for (int i = 0; i < dynamicCryptoList.length; i++)
                 dynamicCryptoList[i]
-              
+
           ])),
           Row(children: <Widget>[
             Container(

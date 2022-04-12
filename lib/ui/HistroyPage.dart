@@ -6,6 +6,7 @@ import 'package:flutter_project/globalVariables.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../entity/CryptoEntity.dart';
 
@@ -22,6 +23,9 @@ class HistoryPageState extends State<HistoryPage> {
   DateTime startTime = DateTime(2000);
   DateTime endTime = DateTime(2000);
   String crypto = " ";
+  String apiPathCryptoHistory = 'https://9gfx4yhlgg.execute-api.us-east-2.amazonaws.com/prod/v1/history/';
+  List<FlSpot> cryptoDataResult = [] ;
+  
   TextEditingController maxResultController = new TextEditingController();
   HistoryPageState(this.crypto);
 
@@ -30,98 +34,40 @@ class HistoryPageState extends State<HistoryPage> {
     const Color(0xff02d39a)
   ];
 
-  List<Widget> dynamicListBar = [];
-  List<CryptoEntity> result = [
-    new CryptoEntity(
-        price: 34000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 1)),
-    new CryptoEntity(
-        price: 35000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 2)),
-    new CryptoEntity(
-        price: 36000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 3)),
-    new CryptoEntity(
-        price: 37000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 4)),
-    new CryptoEntity(
-        price: 31000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 5)),
-    new CryptoEntity(
-        price: 32000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 6)),
-    new CryptoEntity(
-        price: 38000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 7)),
-    new CryptoEntity(
-        price: 50000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 8)),
-    new CryptoEntity(
-        price: 12000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 9)),
-    new CryptoEntity(
-        price: 3000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 10)),
-    new CryptoEntity(
-        price: 30000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 11)),
-    new CryptoEntity(
-        price: 32000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 12)),
-    new CryptoEntity(
-        price: 31000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 13)),
-    new CryptoEntity(
-        price: 36000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 14)),
-    new CryptoEntity(
-        price: 20000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 15)),
-    new CryptoEntity(
-        price: 10000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 16)),
-    new CryptoEntity(
-        price: 12000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 17)),
-    new CryptoEntity(
-        price: 15000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 18)),
-    new CryptoEntity(
-        price: 17000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 19)),
-    new CryptoEntity(
-        price: 40000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 20)),
-    new CryptoEntity(
-        price: 41000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 21)),
-    new CryptoEntity(
-        price: 42000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 22)),
-    new CryptoEntity(
-        price: 43000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 23)),
-    new CryptoEntity(
-        price: 5000, name: "Bitcoin", dateResult: DateTime.utc(2000, 12, 24)),
-  ];
+  Future<List<CryptoEntity>> getHistory(String cryptoName, DateTime startTime, DateTime endTime, bool spread, String maxResults) async {
+    String startTimeStr = DateFormat('yyyy-MM-dd – kk:mm').format(startTime);
+    String endTimeStr = DateFormat('yyyy-MM-dd – kk:mm').format(endTime);
+    String spreadStr = "";
+    List <CryptoEntity> cryptoData = [];
+    
+    if(spread) {
+      spreadStr = "True";
+    } else {
+      spreadStr = "False";
+    }
 
-  List<FlSpot> addResultToGraph() {
-    List<FlSpot> results = [];
-    result.forEach((element) => results
-        .add(new FlSpot(element.dateResult.day.toDouble(), element.price)));
-    return results;
+    Uri url = Uri.parse(
+            apiPathCryptoHistory +
+            cryptoName.toLowerCase() +
+            '?start=' + "2022-04-08T08:31:00.000Z" +
+            '&end=' + "2022-14-08T08:32:00.000Z" +
+            '&spread=' + spreadStr +
+            '&max_results=' + maxResults);
+    
+
+    var response = await http.get(
+      url,
+    );
+    jsonDecode(response.body).forEach((element) {cryptoData.add(CryptoEntity.fromJson(element)); });
+    return cryptoData;
+  
   }
 
-  void addElement() {
-    setState(() {
-      dynamicListBar.add(element());
-    });
-  }
-
-  Widget element() {
-    return Container(
-        width: 300,
-        height: 300,
-        color: Colors.black,
-        child: Flexible(
-            flex: 1,
-            child: new Card(
-              child: ListView.builder(
-                itemCount: result.length,
-                itemBuilder: (_, index) {
-                  return new Padding(
-                    padding: new EdgeInsets.all(10.0),
-                    child: new Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        new Container(
-                          margin: new EdgeInsets.only(left: 10.0),
-                          child: new Text("${result[index]}"),
-                        ),
-                        new Divider()
-                      ],
-                    ),
-                  );
-                },
-              ),
-            )));
+  Future<void> getHistoryOnPressed() async {
+    List<CryptoEntity> result = [];
+    result = await getHistory(crypto, startTime, endTime, true, maxResultController.text);
+    result.forEach((element) => cryptoDataResult.add(new FlSpot(element.dateResult.day.toDouble(), element.price)));
+    
   }
 
   @override
@@ -226,7 +172,7 @@ class HistoryPageState extends State<HistoryPage> {
                   ),
                 ),
                 FloatingActionButton(
-                  onPressed: addElement,
+                  onPressed: getHistoryOnPressed,
                   tooltip: 'Add',
                   child: Icon(Icons.search),
                 ),
@@ -274,7 +220,7 @@ class HistoryPageState extends State<HistoryPage> {
                       ),
                       lineBarsData: [
                         LineChartBarData(
-                          spots: addResultToGraph(),
+                          spots: cryptoDataResult,
                           isCurved: true,
                           gradient: LinearGradient(
                             colors: gradientColors,
